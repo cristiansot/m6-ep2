@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Navbar, Container, Nav, Button, Modal, Form } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom";
 import logotipo from "../assets/img/logotipo.png";
 import { useAuth } from "../context/AuthContext";
 

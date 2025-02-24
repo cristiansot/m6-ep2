@@ -1,106 +1,71 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import DoctorCard from './components/DoctorCard';
-import OfflineBanner from './components/OfflineBanner';
-import InstallButton from './components/InstallButton';
-import AppointmentForm from './components/AppointmentForm.tsx';
-import AppNavbar from './components/AppNavbar';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css';
-import { AuthProvider } from './context/AuthContext'; 
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./components/Home";
+import EquipoMedico from "./components/EquipoMedico";
+import Testimonios from "./components/Testimonios";
+import AppNavbar from "./components/NavBar";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
+import AppointmentForm from "./components/AppointmentForm";
+import "./App.css";
 
 interface Doctor {
   nombre: string;
-  imagen: string;
   especialidad: string;
-  resumen: string;
-  años_experiencia: number;
-  valor_consulta: number;
-  informacion_adicional: {
-    horarios_disponibles: string[];
-    contacto: {
-      telefono: string;
-      email: string;
-    };
-  };
 }
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then((registration) => {
-        console.log('Service Worker registrado:', registration);
-      })
-      .catch((error) => {
-        console.error('Error al registrar el Service Worker:', error);
-      });
-  });
+interface AppointmentValues {
+  patientName: string;
+  doctor: string;
+  appointmentDate: string;
 }
 
 function App() {
-  const [equipo, setEquipo] = useState<Doctor[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentValues[]>([]);
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .then((registration) => {
-            console.log('Service Worker registrado con éxito:', registration);
-          })
-          .catch((error) => {
-            console.error('Error al registrar el Service Worker:', error);
-          });
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    fetch('src/assets/equipo.json')
+    fetch("/equipo.json")
       .then((response) => response.json())
-      .then((data) => setEquipo(data))
-      .catch((error) => console.error('Error al cargar los datos:', error));
+      .then((data) => setDoctors(data))
+      .catch((error) => console.error("Error al cargar los doctores:", error));
   }, []);
 
-  const handleAppointmentSubmit = (values: any) => {
-    console.log("Cita agendada:", values);
+  const handleAppointmentSubmit = (values: AppointmentValues) => {
+    setAppointments((prevAppointments) => [...prevAppointments, values]);
   };
 
   return (
-    <AuthProvider> 
+    <AuthProvider>
       <Router>
-        <OfflineBanner />
         <AppNavbar />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px' }}>
-          <InstallButton />
-        </div>
         <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/testimonios" element={<Testimonios />} />
           <Route
-            path="/"
+            path="/equipo-medico"
             element={
-              <div className="container" style={{ marginBottom: 40 }}>
-                <div className="row">
-                  {equipo.map((doctor, index) => (
-                    <div className="col-md-4" key={index}>
-                      <DoctorCard doctor={doctor} />
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <ProtectedRoute requiredRole="admin">
+                <EquipoMedico />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/citas"
             element={
-              <AppointmentForm
-                doctors={equipo.map((doc) => ({
-                  nombre: doc.nombre,
-                  especialidad: doc.especialidad,
-                }))}
-                onAppointmentSubmit={handleAppointmentSubmit}
-                token="tu_token_de_autenticación" 
-              />
+              <ProtectedRoute requiredRole="admin">
+                <div>
+                  <h2>Citas Agendadas</h2>
+                  <ul>
+                    {appointments.map((appointment, index) => (
+                      <li key={index}>
+                        {appointment.patientName} - {appointment.doctor} - {appointment.appointmentDate}
+                      </li>
+                    ))}
+                  </ul>
+                  <AppointmentForm doctors={doctors} onAppointmentSubmit={handleAppointmentSubmit} />
+                </div>
+              </ProtectedRoute>
             }
           />
         </Routes>
