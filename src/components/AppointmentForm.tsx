@@ -11,13 +11,8 @@ interface AppointmentValues {
 }
 
 const AppointmentForm: React.FC = () => {
-  const [appointments, setAppointments] = useState<AppointmentValues[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentValues | null>(null);
   const [doctors, setDoctors] = useState<any[]>([]);
-
-  useEffect(() => {
-    const storedAppointments = getFromLocalStorage<AppointmentValues[]>("appointments") || [];
-    setAppointments(storedAppointments);
-  }, []);
 
   useEffect(() => {
     fetch("public/equipo.json")
@@ -26,7 +21,6 @@ const AppointmentForm: React.FC = () => {
       .catch((error) => console.error("Error al cargar los datos:", error));
   }, []);
 
-  // Validación del formulario con Yup
   const validationSchema = Yup.object({
     patientName: Yup.string().required("El nombre del paciente es obligatorio"),
     doctor: Yup.string().required("Seleccionar un doctor es obligatorio"),
@@ -36,20 +30,14 @@ const AppointmentForm: React.FC = () => {
   const submitAppointment = (values: AppointmentValues) => {
     const newAppointment: AppointmentValues = { ...values };
 
-    const isDuplicate = appointments.some(
-      (appt) => appt.patientName === newAppointment.patientName && appt.appointmentDate === newAppointment.appointmentDate && appt.doctor === newAppointment.doctor
-    );
-
-    if (!isDuplicate) {
-      const updatedAppointments = [...appointments, newAppointment];
-      setAppointments(updatedAppointments);
-      saveToLocalStorage("appointments", updatedAppointments); 
-    } else {
-      console.log("Esta cita ya está registrada.");
-    }
+    const storedAppointments = getFromLocalStorage<AppointmentValues[]>("appointments") || [];
+    const updatedAppointments = [...storedAppointments, newAppointment];
+    saveToLocalStorage("appointments", updatedAppointments);
+    setAppointments(newAppointment);
   };
 
   return (
+    
     <div className="formContainer">
       <h2 style={{ marginTop: 40, padding: 20, color: "#5f6061" }}>Agendar Cita</h2>
       <Formik
@@ -104,18 +92,16 @@ const AppointmentForm: React.FC = () => {
         )}
       </Formik>
 
-      <h3>Citas Agendadas</h3>
-      <ul>
-        {appointments.length > 0 ? (
-          appointments.map((appt, index) => (
-            <li key={index}>
-              {appt.patientName} - {appt.doctor} - {appt.appointmentDate}
-            </li>
-          ))
-        ) : (
-          <li>No hay citas agendadas.</li>
-        )}
-      </ul>
+      <h3>Cita Agendada</h3>
+      {appointments ? (
+        <ul>
+          <li>
+            {appointments.patientName} - {appointments.doctor} - {appointments.appointmentDate}
+          </li>
+        </ul>
+      ) : (
+        <p>No hay citas agendadas.</p>
+      )}
     </div>
   );
 };
