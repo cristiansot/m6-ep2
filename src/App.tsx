@@ -3,10 +3,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
 import EquipoMedico from "./components/EquipoMedico";
 import Testimonios from "./components/Testimonios";
-import AppNavbar from "./components/NavBar";
+import AppNavbar from "./components/Navbar";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import AppointmentForm from "./components/AppointmentForm";
+import { getFromLocalStorage, saveToLocalStorage } from "./utils/localStorageUtils";
+
 import "./App.css";
 
 interface Doctor {
@@ -25,14 +27,20 @@ function App() {
   const [appointments, setAppointments] = useState<AppointmentValues[]>([]);
 
   useEffect(() => {
-    fetch("/equipo.json")
+    fetch("public/equipo.json")
       .then((response) => response.json())
       .then((data) => setDoctors(data))
       .catch((error) => console.error("Error al cargar los doctores:", error));
+
+    // Recuperar citas almacenadas
+    const storedAppointments = getFromLocalStorage<AppointmentValues[]>("appointments") || [];
+    setAppointments(storedAppointments);
   }, []);
 
   const handleAppointmentSubmit = (values: AppointmentValues) => {
-    setAppointments((prevAppointments) => [...prevAppointments, values]);
+    const updatedAppointments = [...appointments, values];
+    setAppointments(updatedAppointments);
+    saveToLocalStorage("appointments", updatedAppointments);
   };
 
   return (
@@ -63,7 +71,7 @@ function App() {
                       </li>
                     ))}
                   </ul>
-                  <AppointmentForm doctors={doctors} onAppointmentSubmit={handleAppointmentSubmit} />
+                  <AppointmentForm doctors={doctors.map(doc => doc.nombre)} onAppointmentSubmit={handleAppointmentSubmit} />
                 </div>
               </ProtectedRoute>
             }

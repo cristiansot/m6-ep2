@@ -3,6 +3,10 @@ Ejercicio Práctico: Almacenamiento y Análisis de PWA en la Web del Hospital
 
 
 src/
+├── assets/
+│   ├── img/
+│   ├── css/
+│   ├── equipo.json
 ├── components/
 │   ├── AppointmentForm.tsx
 │   ├── Carousel.tsx
@@ -15,11 +19,13 @@ src/
 │   ├── Testimonios.tsx
 ├── context/
 │   ├── AuthContext.tsx
-├── assets/
-│   ├── img/
-│   ├── css/
-│   ├── equipo.json
 ├── routes/
 │   ├── ProtectedRoute.tsx
+├── utils/
+│   ├── localStorageUtils.ts
+├── .env
 ├── App.tsx
+├── import.meta.env
 ├── main.tsx
+├── types.d.ts
+├── vite-env.ts

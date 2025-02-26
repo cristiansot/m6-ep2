@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import { saveToLocalStorage, getFromLocalStorage } from "../utils/localStorageUtils";
 import * as Yup from "yup";
 import "../assets/css/form.css";
-import { useAuth } from "../context/AuthContext";
-
-interface Doctor {
-  nombre: string;
-  especialidad: string;
-}
 
 interface AppointmentValues {
   patientName: string;
@@ -15,56 +10,42 @@ interface AppointmentValues {
   appointmentDate: string;
 }
 
-interface AppointmentFormProps {
-  onAppointmentSubmit: (values: AppointmentValues) => void;
-}
-
-const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentSubmit }) => {
-  const { token } = useAuth();
-  const [apiResponse, setApiResponse] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+const AppointmentForm: React.FC = () => {
+  const [appointments, setAppointments] = useState<AppointmentValues[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("src/assets/equipo.json")
+    const storedAppointments = getFromLocalStorage<AppointmentValues[]>("appointments") || [];
+    setAppointments(storedAppointments);
+  }, []);
+
+  useEffect(() => {
+    fetch("public/equipo.json")
       .then((response) => response.json())
       .then((data) => setDoctors(data))
       .catch((error) => console.error("Error al cargar los datos:", error));
   }, []);
 
+  // Validación del formulario con Yup
   const validationSchema = Yup.object({
     patientName: Yup.string().required("El nombre del paciente es obligatorio"),
-    doctor: Yup.string().required("Debes seleccionar un doctor"),
-    appointmentDate: Yup.date().required("Debes seleccionar una fecha"),
+    doctor: Yup.string().required("Seleccionar un doctor es obligatorio"),
+    appointmentDate: Yup.string().required("La fecha de la cita es obligatoria"),
   });
 
-  const submitAppointment = async (values: AppointmentValues) => {
-    try {
-      setIsSubmitting(true);
-      setApiResponse(null);
+  const submitAppointment = (values: AppointmentValues) => {
+    const newAppointment: AppointmentValues = { ...values };
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/appointments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(values),
-      });
+    const isDuplicate = appointments.some(
+      (appt) => appt.patientName === newAppointment.patientName && appt.appointmentDate === newAppointment.appointmentDate && appt.doctor === newAppointment.doctor
+    );
 
-      if (response.ok) {
-        const data = await response.json();
-        setApiResponse("Cita agendada exitosamente");
-        onAppointmentSubmit(values); 
-      } else {
-        const errorData = await response.json();
-        setApiResponse(`Error: ${errorData.message || "No se pudo agendar la cita"}`);
-      }
-    } catch (error) {
-      console.error("Error al enviar la cita:", error);
-      setApiResponse("Error al conectar con el servidor");
-    } finally {
-      setIsSubmitting(false);
+    if (!isDuplicate) {
+      const updatedAppointments = [...appointments, newAppointment];
+      setAppointments(updatedAppointments);
+      saveToLocalStorage("appointments", updatedAppointments); 
+    } else {
+      console.log("Esta cita ya está registrada.");
     }
   };
 
@@ -83,7 +64,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentSubmit }
           resetForm();
         }}
       >
-        {() => (
+        {({ isSubmitting }) => (
           <Form className="appointmentForm">
             <div>
               <label className="titleLabel" htmlFor="patientName">
@@ -119,20 +100,22 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentSubmit }
             <button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enviando..." : "Agendar"}
             </button>
-
-            {apiResponse && (
-              <div
-                style={{
-                  marginTop: 20,
-                  color: apiResponse.startsWith("Error") ? "red" : "green",
-                }}
-              >
-                {apiResponse}
-              </div>
-            )}
           </Form>
         )}
       </Formik>
+
+      <h3>Citas Agendadas</h3>
+      <ul>
+        {appointments.length > 0 ? (
+          appointments.map((appt, index) => (
+            <li key={index}>
+              {appt.patientName} - {appt.doctor} - {appt.appointmentDate}
+            </li>
+          ))
+        ) : (
+          <li>No hay citas agendadas.</li>
+        )}
+      </ul>
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-// Verifica si BeforeInstallPromptEvent ya está en el contexto global
 declare global {
   interface BeforeInstallPromptEvent extends Event {
     readonly platforms: string[];

@@ -21,7 +21,7 @@ const EquipoMedico: React.FC = () => {
   const [equipo, setEquipo] = useState<Doctor[]>([]);
 
   useEffect(() => {
-    fetch("src/assets/equipo.json")
+    fetch("public/equipo.json")
       .then((response) => response.json())
       .then((data) => setEquipo(data))
       .catch((error) => console.error("Error al cargar los datos:", error));
