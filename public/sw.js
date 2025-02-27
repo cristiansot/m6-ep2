@@ -6,6 +6,7 @@ const ASSETS_TO_CACHE = [
   '/img/icon-192x192.png',
   '/img/icon-512x512.png',
   '/offline.html',
+  '/styles.css',  
 ];
 
 self.addEventListener('install', (event) => {
@@ -13,14 +14,23 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log('Cache abierto');
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+    }).then(() => self.skipWaiting()) 
   );
 });
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request).catch(() => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(event.request).then((networkResponse) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, networkResponse.clone()); 
+          return networkResponse;
+        });
+      }).catch(() => {
         return caches.match('/offline.html');
       });
     })
@@ -33,12 +43,14 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Eliminando cache antigua:', cacheName);
+            console.log('Eliminando caché antigua:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  self.clients.claim();
+  self.clients.claim(); 
 });
+
+

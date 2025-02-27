@@ -63,7 +63,6 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <div>
-                  <h2>Citas Agendadas</h2>
                   <ul>
                     {appointments.map((appointment, index) => (
                       <li key={index}>

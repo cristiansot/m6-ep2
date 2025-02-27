@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import { Navbar, Container, Nav, Button, Modal, Form } from "react-bootstrap";
+import { Navbar, Container, Nav, Button, Modal, Form, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import logotipo from "../assets/img/logotipo.png";
 import { useAuth } from "../context/AuthContext";
+import { saveUserCredentials } from "../utils/localStorageUtils"; 
 
 const AppNavbar: React.FC = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { isAuthenticated, role, login, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -15,24 +17,33 @@ const AppNavbar: React.FC = () => {
   const handleLoginShow = () => setShowLogin(true);
 
   const handleLogin = () => {
-    if (login(username, password)) {
+    if (!username || !password) {
+      setLoginError("Ambos campos son obligatorios.");
+      return;
+    }
+
+    const success = login(username, password);
+
+    if (success) {
+      saveUserCredentials(username, password); 
+
+      setLoginError(null);
       handleLoginClose();
+      navigate("/"); 
     } else {
-      alert("Credenciales inválidas");
+      setLoginError("Credenciales inválidas");
     }
   };
 
   const handleLogout = () => {
     logout();
+    localStorage.removeItem('userCredentials');
     navigate("/");
   };
 
   return (
     <>
-      <Navbar
-        style={{ backgroundColor: "rgba(255, 255, 255, 0.8)", marginBottom: 12, marginTop: 20 }}
-        sticky="top"
-      >
+      <Navbar style={{ backgroundColor: "rgba(255, 255, 255, 0.8)", marginBottom: 12, marginTop: 20 }} sticky="top">
         <Container>
           <Navbar.Brand>
             <Link to="/">
@@ -97,6 +108,8 @@ const AppNavbar: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </Form.Group>
+
+            {loginError && <Alert variant="danger" className="mt-2">{loginError}</Alert>}
           </Form>
         </Modal.Body>
         <Modal.Footer>
