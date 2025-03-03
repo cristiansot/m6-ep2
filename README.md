@@ -8,36 +8,36 @@ Este proyecto es un ejercicio práctico que permite gestionar las citas de pacie
 
 La estructura del proyecto es la siguiente:
 
-```bash
-src/
-├── assets/
-│   ├── img/
-│   ├── css/
-│   ├── equipo.json
-├── components/
-│   ├── AppointmentForm.tsx
-│   ├── Carousel.tsx
-│   ├── DoctorCard.tsx
-│   ├── EquipoMedico.tsx
-│   ├── Home.tsx
-│   ├── InstallButton.tsx
-│   ├── Navbar.tsx
-│   ├── OfflineBanner.tsx
-│   ├── Testimonios.tsx
-├── context/
-│   ├── AuthContext.tsx
-├── routes/
-│   ├── ProtectedRoute.tsx
-├── utils/
-│   ├── indexedDbUtils.ts
-│   ├── localStorageUtils.ts
-├── .env
-├── App.tsx
-├── import.meta.env
-├── main.tsx
-├── types.d.ts
-├── vite-env.ts
-
+    ```bash
+    src/
+    ├── assets/
+    │   ├── img/
+    │   ├── css/
+    │   ├── equipo.json
+    ├── components/
+    │   ├── AppointmentForm.tsx
+    │   ├── Carousel.tsx
+    │   ├── DoctorCard.tsx
+    │   ├── EquipoMedico.tsx
+    │   ├── Home.tsx
+    │   ├── InstallButton.tsx
+    │   ├── Navbar.tsx
+    │   ├── OfflineBanner.tsx
+    │   ├── Testimonios.tsx
+    ├── context/
+    │   ├── AuthContext.tsx
+    ├── routes/
+    │   ├── ProtectedRoute.tsx
+    ├── utils/
+    │   ├── indexedDbUtils.ts
+    │   ├── localStorageUtils.ts
+    ├── .env
+    ├── App.tsx
+    ├── import.meta.env
+    ├── main.tsx
+    ├── types.d.ts
+    ├── vite-env.ts
+    ```
 
 ## Descripción de la Aplicación
 
@@ -86,6 +86,7 @@ La aplicación está diseñada para adaptarse a dispositivos móviles y escritor
 
    ```bash
    git clone https://github.com/cristiansot/m6-ep2
+   cd m6-ep2
 
 2. Instala dependencias:
 
@@ -97,4 +98,17 @@ La aplicación está diseñada para adaptarse a dispositivos móviles y escritor
    ```bash
    npm run dev
 
+### Credenciales usuario y password
 
+1. Credencial user (solo puede ver home y testimonios)
+
+   ```bash
+   user: user
+   pass: user
+
+2. Credencial administrador (puede ver todo y agendar citas)
+
+   ```bash
+   user: admin
+   pass: admin
+   
